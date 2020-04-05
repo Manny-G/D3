@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <script src="https://d3js.org/d3.v5.min.js" type="text/JavaScript"></script>
+  <body>
+    <svg />
+    <script>
+d3.json('tweets.json').then(d => dataViz(d.tweets));
+
+  function dataViz(data) {
+    console.log(data);
+    
+    data.forEach(d => {
+      d.impact = d.favorites.length + d.retweets.length;
+      d.tweetTime = new Date(d.timestamp);
+    });
+
+    console.log(data);
+
+    var _mImpact = d3.max(data, d => d.impact);
+    console.log(_mImpact);
+
+    var _time = d3.extent(data, d => d.tweetTime);
+    console.log(_time);
+    
+    var timeScale = d3.scaleTime().domain(_time).range([20, 480]);
+    var yScale = d3.scaleLinear().domain([0, _mImpact]).range([20, 460]);
+    var radScale = d3.scaleLinear().domain([0, _mImpact]).range([1, 20]);
+    var colorScale = d3.scaleLinear().domain([0, _mImpact]).range(['white', 'cornflowerblue']);
+    
+    d3.select('svg')
+    .attr('height', '480px')
+    .attr('width', '600px');
+
+    d3.select('svg')
+    .selectAll('circle')
+    .data(data)
+    .enter()
+    .append('circle')
+      .attr('r', d => radScale(d.impact))
+      .attr('cx', d => timeScale(d.tweetTime))
+      .attr('cy', d => 480 - yScale(d.impact))
+      .style('fill', d => colorScale(d.impact))
+      .style('stroke', 'black')
+      .style('stroke-width', '1px')
+  }
+
+    </script>
+  </body>
+</html>
+

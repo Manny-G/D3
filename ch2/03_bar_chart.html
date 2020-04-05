@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <script src="https://d3js.org/d3.v5.min.js" type="text/JavaScript"></script>
+  <body>
+    <svg />
+    <script>
+      // var arr = [15, 50, 22, 8, 100, 10];
+      var arr = [14, 68, 24500, 430, 19, 1000, 5555];
+      var _domain = [0, 100, 500];
+      var _range = [0, 50, 100];
+      var yScale = d3.scaleLinear().domain(_domain).range(_range).clamp(true);
+      console.log(yScale(0));
+      console.log(yScale(100));
+      console.log(yScale(1000));
+
+      d3.select("svg")
+        .selectAll("rect")
+        .data(arr)
+        .enter()
+        .append("rect")
+          .attr("x", (d, i) => i*10)
+          .attr("y", d => d3.max(_range, el => el) - yScale(d))
+          .attr("width", 10)
+          .attr("height", d => yScale(d))
+          .style("opacity", d => yScale(d)/d3.max(_range, el => el))
+          .style("fill", "orange")
+          .style("stroke", "black")
+          .style("stroke-width", "1px")
+          .on("mouseover", function() {d3.select(this).style("fill", "green")})
+          .on("mouseout", function() {d3.select(this).style("fill", "orange")});
+          //.style("opacity", 0.25);
+    </script>
+  </body>
+</html>
+
+
+

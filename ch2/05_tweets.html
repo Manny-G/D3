@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <script src="https://d3js.org/d3.v5.min.js" type="text/JavaScript"></script>
+  <body>
+    <svg />
+    <script>
+d3.json('tweets.json').then(d => dataViz(d.tweets));
+
+function dataViz(data) {
+  console.log(data);
+  console.log(data.user);
+
+  var _nested = d3.nest()
+    .key(d => d.user)
+    .entries(data);
+  console.log(_nested);
+
+  _nested.forEach(d => {d.numTweets = d.values.length});
+  console.log(_nested);
+
+  var _max = d3.max(_nested, d => d.numTweets);
+  console.log(_max);
+
+  var _domain = [0, _max];
+  var _range = [0, 500];
+  var yScale = d3.scaleLinear().domain(_domain).range(_range).clamp(true);
+
+  d3.select('svg')
+  .attr('height', '520')
+  .attr('width', '600')
+
+  d3.select('svg')
+  .selectAll('rect')
+  .data(_nested)
+  .enter()
+  .append('rect')
+    .attr('x', (d, i) => i*60 + 5)
+    .attr('y', (d, i) => 505 - yScale(d.numTweets))
+    .attr('height', (d, i) => yScale(d.numTweets))
+    .attr('width', 50)
+    .style('fill', 'orange')
+    .style('stroke', 'black')
+    .style('stroke-width', '1px')
+}
+
+    </script>
+  </body>
+</html>

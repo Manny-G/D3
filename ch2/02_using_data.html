@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <script src="https://d3js.org/d3.v5.min.js" type="text/JavaScript"></script>
+  <body>
+    <!<div class="cities" />
+  <script>
+    d3.csv("../d3_in_action_2/data/cities.csv").then(function(d) {
+      console.log(d);
+      dataViz(d);
+    });
+
+    function dataViz(data) {
+      d3.select("body").selectAll("div.cities")
+      .data(data)
+      .enter()
+      .append("div")
+        .attr("class", "cities")
+        .html(d => d.label);
+    }
+
+  </script>
+  </body>
+</html>
+
+

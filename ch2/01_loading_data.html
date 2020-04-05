@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <script src="https://d3js.org/d3-fetch.v1.min.js"></script>
+  <script>
+
+    /*d3.csv("../d3_in_action_2/data/cities.csv", function(d) {
+      console.log(d);
+    });*/
+
+    d3.csv("../d3_in_action_2/data/cities.csv")
+      .then(function(d) {
+        console.log(d);
+      })
+  .catch(function(e) { console.log(e); });
+
+  </script>
+  <body>
+    <div id="vizContainer">
+      <svg style="width:500px; height:500px; border:1px lightgray solid;"/>
+    </div>
+  </body>
+</html>
+
