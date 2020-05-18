@@ -1,0 +1,161 @@
+
+<!--<!DOCTYPE html>-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<svg id="svgId"></svg>
+<div id='tooltipId'></div>
+<script src="https://ajax.googleapis.com/ajax/libs/d3js/5.15.1/d3.min.js"></script>
+<script>
+
+    // Svg dimensions
+    var svgHeight = 600
+    var svgWidth = 1200
+
+    // Define margins, dimensions, and some line colors
+    const margin = {top: 40, right: 120, bottom: 30, left: 40};
+    const width = svgWidth - margin.left - margin.right;
+    const height = svgHeight - margin.top - margin.bottom;
+
+    const svg = d3.select('#svgId')
+        .attr('height', svgHeight)
+        .attr('width', svgWidth)
+        .append('g')
+            .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+    const tooltip = d3.select('#tooltipId')
+        .style('position', 'absolute')
+        .style('text-align', 'center')
+        .style('width', '120')
+        .style('height', '55')
+        .style('padding', '5px')
+        .style('font', '12px sans-serif')
+        .style('background', 'lightsteelblue')
+        .style('border', '1px black solid')
+        .style('border-radius', '20px')
+        .style('pointer-events', 'none')
+        .style('visibility', 'hidden');
+
+    const tooltipLine = svg.append('line');
+
+    const colormap = {'f1': 'red', 'f2': 'blue', 'f3': 'green'}
+
+    // Load the data and draw a svg
+    d3.csv('functions.csv').then(data => {
+        // console.log(data)
+        let dict = {'f1': [],
+            'f2': [],
+            'f3': []}
+        data.forEach(d => {
+            dict['f1'].push([d['x'], d['f1']])
+            dict['f2'].push([d['x'], d['f2']])
+            dict['f3'].push([d['x'], d['f3']])
+        })
+
+        // Define the scales and tell D3 how to draw the line
+        const xRange = d3.extent(data, d => parseInt(d['x']))
+        const maxVal = d3.max( [d3.max(data, d => parseInt(d['f1'])), d3.max(data, d => parseInt(d['f2'])), d3.max(data, d => parseInt(d['f3']))] )
+        const minVal = d3.min( [d3.min(data, d => parseInt(d['f1'])), d3.min(data, d => parseInt(d['f2'])), d3.min(data, d => parseInt(d['f3']))] )
+        const xScale = d3.scaleLinear().domain(xRange).range([0, width]);
+        const yScale = d3.scaleLinear().domain([minVal, maxVal]).range([height, 0]);
+        const line = d3.line().x(d => xScale(d[0])).y(d => yScale(d[1]));
+
+        // Add the axes and a title
+        svg.append('g')
+            .attr('id', 'xAxisId')
+            .attr('transform', `translate(0, ${height})`)
+            .call(d3.axisBottom(xScale).tickSize(-height))
+            .append('text')
+            .attr('x', width/2)
+            .attr('y', 25)
+            .attr('fill', 'black')
+            .style('font-style', 'italic')
+            .style('font-weight', 'bold')
+            .text('Number of Coin Flips')
+
+        svg.append('g')
+            .attr('id', 'yAxisId')
+            .call(d3.axisLeft(yScale).tickSize(-width))
+            .append('text')
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('transform', `translate(-25, ${height/2}) rotate(-90)`)
+            .attr('fill', 'black')
+            .style('font-style', 'italic')
+            .style('font-weight', 'bold')
+            .text('Percentage')
+
+        svg.append('g')
+            .attr('id', 'titleId')
+            .append('text')
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('transform', `translate(${width/2 - 100}, -5)`)
+            .text('Function Growth Comparison');
+
+        svg.selectAll()
+            .data(d3.entries(dict)).enter()
+            .append('g')
+            .attr('id', d => `${d['key']}Id`)
+            .append('path')
+            .attr('fill', 'none')
+            .attr('stroke', d => colormap[d['key']])
+            .attr('stroke-width', 1)
+            .datum(d => d['value'])
+            .attr('d', line);
+
+        tipBox = svg.append('g')
+            .attr('g', 'tipboxId')
+            .append('rect')
+            .datum(d3.entries(dict))
+            .attr('id', 'tipBox')
+            .attr('width', width)
+            .attr('height', height)
+            .attr('opacity', 0)
+            .on('mousemove', drawTooltip)
+            .on('mouseout', removeTooltip);
+
+        function removeTooltip() {
+            if (tooltip)
+                tooltip.style('visibility', 'hidden');
+            if (tooltipLine)
+                tooltipLine.style('visibility', 'hidden');
+        }
+
+        function drawTooltip(df) {
+            var mouseXY = d3.mouse(this)
+            const xMousePos = (xScale.invert(mouseXY[0])).toFixed(0);
+
+            let row = []
+            for(const [k, v] of Object.entries(df)){
+                row.push([v['key'], v['value'][xMousePos][1]])
+            }
+            row.sort((a, b) => {return parseInt(b[1]) - parseInt(a[1])})
+
+            tooltipLine.attr('stroke', 'black')
+                .attr('stroke-width', '1px')
+                .attr('x1', xScale(xMousePos))
+                .attr('x2', xScale(xMousePos))
+                .attr('y1', 0)
+                .attr('y2', height)
+                .style('visibility', 'visible');
+
+            tooltip.html("x = "+xMousePos)
+                .style('display', 'block')
+                .style('left', d3.event.pageX + 20)
+                .style('top', d3.event.pageY - 20)
+                .style('visibility', 'visible')
+                .selectAll()
+                .data(row).enter()
+                .append('div')
+                .style('color', d => colormap[d[0]])
+                .html(d => `${d[0]} = ${d[1]}`);
+        }
+    })
+
+</script>
+</body>
+</html>
